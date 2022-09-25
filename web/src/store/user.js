@@ -7,8 +7,10 @@ export default {
 		photo: "",
 		token: "",
 		is_login: false,
+		pulling_info: true, // 是否正在从云端拉取信息
 	},
 	getters: {},
+	// 同步操作可以放进mutations里面
 	mutations: {
 		updateUser(state, user) {
 			state.id = user.id;
@@ -26,7 +28,11 @@ export default {
 			state.token = "";
 			state.is_login = false;
 		},
+		updatePullingInfo(state, pulling_info) {
+			state.pulling_info = pulling_info;
+		},
 	},
+	// 异步操作只能放进actions里面
 	actions: {
 		login(context, data) {
 			$.ajax({
@@ -38,6 +44,8 @@ export default {
 				},
 				success(resp) {
 					if (resp.error_message === "success") {
+						// 持久化登陆状态，把 token存到浏览器
+						localStorage.setItem("jwt_token", resp.token);
 						context.commit("updateToken", resp.token);
 						data.success(resp);
 					} else {
@@ -73,6 +81,8 @@ export default {
 			});
 		},
 		logout(context) {
+			// 退出时把 token从浏览器删除
+			localStorage.removeItem("jwt_token");
 			context.commit("logout");
 		},
 	},
